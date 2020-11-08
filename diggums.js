@@ -999,7 +999,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     class Digger {
         constructor() {
-            this.body = new Circle(canvas.width * .5, canvas.height * .5, 10, "red", 0, 0, .99)
+            this.body = new Circle(canvas.width * .5, canvas.height * .5, 12, "red", 0, 0, .99)
             this.drill = new Circle(canvas.width * .5, canvas.height * .5, 10, "yellow")
             this.angle = 0
             this.red = 0
@@ -1192,11 +1192,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
         if (upgradedepot.doesPerimeterTouch(diggums.body)) {
             if(diggums.maxfuel < 10000){
             for (let t = 0; diggums.money > 100; diggums.money -= 100) {
-                if(diggums.maxfuel < 10000){
-                    diggums.maxfuel *= 1.05
-                    diggums.redrate *= 1.05
-                    diggums.greenrate *= 1.05
-                    diggums.bluerate *= 1.05
+                if(diggums.maxfuel < 5000){
+                    diggums.maxfuel *= 1.025
+                    diggums.redrate *= 1.025
+                    diggums.greenrate *= 1.025
+                    diggums.bluerate *= 1.025
                 }else{
                     break
                 }
