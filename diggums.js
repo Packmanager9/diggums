@@ -912,7 +912,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 if (object.dry == 1) {
                     object.body.ymom = -(speed * 3)
                     // canvas_context.translate(0, speed*100)
-                }else{
+                } else {
                     object.body.y -= (speed)
                     object.body.ymom -= .05
                     canvas_context.translate(0, speed)
@@ -1080,7 +1080,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fuelgauge = new Rectangle(this.body.x - 330, this.body.y - 270, 100, 20, "red")
             this.fuelgauge.width = (this.fuel / this.maxfuel) * 100
             this.fuel -= .03
-            if(this.fuel <0){
+            if (this.fuel < 0) {
                 this.fuel = 0
             }
             this.fuelgauge.r = 255
@@ -1112,12 +1112,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 for (let k = 400; k < 24000; k += 50) {
                     let block = new Rectangle((t * 50) - 6000, k, 50, 50, getRandomColor())
                     block.r += (Math.random() * (k / 50))
-                    if(Math.random()<.01){
-                    block.g += (Math.random() * (k / 50))
+                    if (Math.random() < (.01 + (k / 1000000))) {
+                        block.g += (Math.random() * (k / 50))
                     }
                     block.g += (Math.random() * (k / 250))
-                    if(Math.random()<.002){
-                    block.b += (Math.random() * (k / 50))
+                    if (Math.random() < (.002 + (k / 1000000))) {
+                        block.b += (Math.random() * (k / 50))
                     }
                     block.b += (Math.random() * (k / 900))
                     this.grid[t].push(block)
@@ -1156,9 +1156,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     let world = new Grid()
     let diggums = new Digger()
-    let fueldepot = new Rectangle(250,250, 100,100,"white")
-    let selldepot = new Rectangle(450,250, 100,100,"white")
-    let upgradedepot = new Rectangle(650,250, 100,100,"white")
+    let fueldepot = new Rectangle(250, 250, 100, 100, "white")
+    let selldepot = new Rectangle(450, 250, 100, 100, "white")
+    let upgradedepot = new Rectangle(650, 250, 100, 100, "white")
 
     function main() {
         canvas_context.clearRect(-10000, -10000, canvas.width * 1000, canvas.height * 1000)  // refreshes the image
@@ -1169,33 +1169,39 @@ window.addEventListener('DOMContentLoaded', (event) => {
         selldepot.draw()
         upgradedepot.draw()
         canvas_context.fillStyle = "white"
-        canvas_context.fillText("fuel", 280,280)
-        canvas_context.fillText("sell", 480,280)
-        canvas_context.fillText("upgrade", 660,280)
-        if(fueldepot.doesPerimeterTouch(diggums.body)){
-            if(diggums.money >= (diggums.maxfuel-diggums.fuel) ){
-                diggums.money-=(diggums.maxfuel-diggums.fuel)
+        canvas_context.fillText("fuel", 280, 280)
+        canvas_context.fillText("sell", 480, 280)
+        canvas_context.fillText("upgrade", 660, 280)
+        if (fueldepot.doesPerimeterTouch(diggums.body)) {
+            if (diggums.money >= (diggums.maxfuel - diggums.fuel)) {
+                diggums.money -= (diggums.maxfuel - diggums.fuel)
                 diggums.fuel = diggums.maxfuel
-            }else{
+            } else {
                 diggums.fuel += diggums.money
                 diggums.money = 0
             }
         }
-        if(selldepot.doesPerimeterTouch(diggums.body)){
-            diggums.money+=diggums.red/100
-            diggums.money+=diggums.green/10
-            diggums.money+=diggums.blue
+        if (selldepot.doesPerimeterTouch(diggums.body)) {
+            diggums.money += diggums.red / 100
+            diggums.money += diggums.green / 10
+            diggums.money += diggums.blue
             diggums.green = 0
             diggums.red = 0
             diggums.blue = 0
         }
-        if(upgradedepot.doesPerimeterTouch(diggums.body)){
-            for(let t=0;diggums.money > 100; diggums.money-=100){
-                diggums.maxfuel*=1.05
-                diggums.redrate*=1.05
-                diggums.greenrate*=1.05
-                diggums.bluerate*=1.05
+        if (upgradedepot.doesPerimeterTouch(diggums.body)) {
+            if(diggums.maxfuel < 10000){
+            for (let t = 0; diggums.money > 100; diggums.money -= 100) {
+                if(diggums.maxfuel < 10000){
+                    diggums.maxfuel *= 1.05
+                    diggums.redrate *= 1.05
+                    diggums.greenrate *= 1.05
+                    diggums.bluerate *= 1.05
+                }else{
+                    break
+                }
             }
+        }
         }
         diggums.draw()
         if (diggums.fuel > 0) {
