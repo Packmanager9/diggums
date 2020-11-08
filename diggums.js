@@ -209,9 +209,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.width = width
             this.color = color
 
-            this.r = Math.random() * 10
-            this.g = Math.random() * 10
-            this.b = Math.random() * 10
+            this.r = 0 //Math.random() * 10
+            this.g = 0 //Math.random() * 10
+            this.b = 0 //Math.random() * 10
             this.color = `rgba(${this.r},${this.g},${this.b}, 1)`
             this.xmom = 0
             this.ymom = 0
@@ -912,6 +912,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 if (object.dry == 1) {
                     object.body.ymom = -(speed * 3)
                     // canvas_context.translate(0, speed*100)
+                }else{
+                    object.body.y -= (speed)
+                    object.body.ymom -= .05
+                    canvas_context.translate(0, speed)
                 }
             }
             if (keysPressed['d']) {
@@ -1007,9 +1011,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fuelgauge.r = 255
             this.fuelgauge.g = 0
             this.fuelgauge.b = 0
-            this.redrate = .5
-            this.bluerate = 2
-            this.greenrate = 2
+            this.redrate = 2
+            this.bluerate = 1
+            this.greenrate = .5
+            this.money = 0
 
             this.dry = 0
         }
@@ -1075,6 +1080,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fuelgauge = new Rectangle(this.body.x - 330, this.body.y - 270, 100, 20, "red")
             this.fuelgauge.width = (this.fuel / this.maxfuel) * 100
             this.fuel -= .03
+            if(this.fuel <0){
+                this.fuel = 0
+            }
             this.fuelgauge.r = 255
             this.fuelgauge.g = 0
             this.fuelgauge.b = 0
@@ -1090,6 +1098,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             canvas_context.fillText(`Nitrogen: ${Math.round(this.blue)}`, this.body.x - 330, this.body.y - 310)
             canvas_context.fillStyle = "blue"
             canvas_context.fillText(`Hydrogen: ${Math.round(this.green)}`, this.body.x - 330, this.body.y - 290)
+            canvas_context.fillText(`$ ${Math.round(this.money)}`, this.body.x + 280, this.body.y - 330)
         }
     }
 
@@ -1098,13 +1107,19 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.grid = []
             this.shape = new Shape([])
             this.shapes = []
-            for (let t = 0; t < 75; t++) {
+            for (let t = 0; t < 500; t++) {
                 this.grid.push([])
-                for (let k = 400; k < 3000; k += 50) {
-                    let block = new Rectangle((t * 50) - 1000, k, 50, 50, getRandomColor())
+                for (let k = 400; k < 24000; k += 50) {
+                    let block = new Rectangle((t * 50) - 6000, k, 50, 50, getRandomColor())
                     block.r += (Math.random() * (k / 50))
+                    if(Math.random()<.01){
                     block.g += (Math.random() * (k / 50))
+                    }
+                    block.g += (Math.random() * (k / 250))
+                    if(Math.random()<.002){
                     block.b += (Math.random() * (k / 50))
+                    }
+                    block.b += (Math.random() * (k / 900))
                     this.grid[t].push(block)
                 }
             }
@@ -1142,6 +1157,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
     let world = new Grid()
     let diggums = new Digger()
     let fueldepot = new Rectangle(250,250, 100,100,"white")
+    let selldepot = new Rectangle(450,250, 100,100,"white")
+    let upgradedepot = new Rectangle(650,250, 100,100,"white")
 
     function main() {
         canvas_context.clearRect(-10000, -10000, canvas.width * 1000, canvas.height * 1000)  // refreshes the image
@@ -1149,10 +1166,36 @@ window.addEventListener('DOMContentLoaded', (event) => {
         world.draw()
         world.clean()
         fueldepot.draw()
+        selldepot.draw()
+        upgradedepot.draw()
         canvas_context.fillStyle = "white"
         canvas_context.fillText("fuel", 280,280)
+        canvas_context.fillText("sell", 480,280)
+        canvas_context.fillText("upgrade", 660,280)
         if(fueldepot.doesPerimeterTouch(diggums.body)){
-            diggums.fuel = diggums.maxfuel
+            if(diggums.money >= (diggums.maxfuel-diggums.fuel) ){
+                diggums.money-=(diggums.maxfuel-diggums.fuel)
+                diggums.fuel = diggums.maxfuel
+            }else{
+                diggums.fuel += diggums.money
+                diggums.money = 0
+            }
+        }
+        if(selldepot.doesPerimeterTouch(diggums.body)){
+            diggums.money+=diggums.red/100
+            diggums.money+=diggums.green/10
+            diggums.money+=diggums.blue
+            diggums.green = 0
+            diggums.red = 0
+            diggums.blue = 0
+        }
+        if(upgradedepot.doesPerimeterTouch(diggums.body)){
+            for(let t=0;diggums.money > 100; diggums.money-=100){
+                diggums.maxfuel*=1.05
+                diggums.redrate*=1.05
+                diggums.greenrate*=1.05
+                diggums.bluerate*=1.05
+            }
         }
         diggums.draw()
         if (diggums.fuel > 0) {
