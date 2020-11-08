@@ -268,9 +268,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
         doesHeadTouch(point) {
             if (point.x + point.radius >= this.x) {
-                if (point.y  >= this.y) {
+                if (point.y >= this.y) {
                     if (point.x - point.radius <= this.x + this.width) {
-                        if (point.y -point.radius <= this.y + this.height) {
+                        if (point.y - point.radius <= this.y + this.height) {
                             return true
                         }
                     }
@@ -279,10 +279,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
             return false
         }
         doesLeftTouch(point) {
-            if (point.x  >= this.x) {
-                if (point.y  >= this.y) {
+            if (point.x >= this.x) {
+                if (point.y >= this.y) {
                     if (point.x - point.radius <= this.x + this.width) {
-                        if (point.y -point.radius <= this.y + this.height) {
+                        if (point.y - point.radius <= this.y + this.height) {
                             return true
                         }
                     }
@@ -292,9 +292,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
         doesRightTouch(point) {
             if (point.x + point.radius >= this.x) {
-                if (point.y  >= this.y) {
-                    if (point.x  <= this.x + this.width) {
-                        if (point.y -point.radius <= this.y + this.height) {
+                if (point.y >= this.y) {
+                    if (point.x <= this.x + this.width) {
+                        if (point.y - point.radius <= this.y + this.height) {
                             return true
                         }
                     }
@@ -910,14 +910,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
         if (typeof object.body != 'undefined') {
             if (keysPressed['w']) {
                 if (object.dry == 1) {
-                    object.body.ymom = -(speed * 2)
+                    object.body.ymom = -(speed * 3)
                     // canvas_context.translate(0, speed*100)
                 }
             }
             if (keysPressed['d']) {
-                if(object.right == 0){
-                object.body.x += speed
-                canvas_context.translate(-speed, 0)
+                if (object.right == 0) {
+                    object.body.x += speed
+                    canvas_context.translate(-speed, 0)
                 }
             }
             // if (keysPressed['s']) {
@@ -925,7 +925,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             //     canvas_context.translate(0, -speed)
             // }
             if (keysPressed['a']) {
-                if(object.left == 0){
+                if (object.left == 0) {
                     object.body.x -= speed
                     canvas_context.translate(speed, 0)
                 }
@@ -995,12 +995,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     class Digger {
         constructor() {
-            this.body = new Circle(canvas.width * .5, canvas.height * .5, 10, "red", 0,0, .99)
+            this.body = new Circle(canvas.width * .5, canvas.height * .5, 10, "red", 0, 0, .99)
             this.drill = new Circle(canvas.width * .5, canvas.height * .5, 10, "yellow")
             this.angle = 0
             this.red = 0
             this.green = 0
             this.blue = 0
+            this.maxfuel = 200
+            this.fuel = 200
+            this.fuelgauge = new Rectangle(0, 0, 100, 20, "red")
+            this.fuelgauge.r = 255
+            this.fuelgauge.g = 0
+            this.fuelgauge.b = 0
+            this.redrate = .5
+            this.bluerate = 2
+            this.greenrate = 2
 
             this.dry = 0
         }
@@ -1010,38 +1019,26 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.head = 0
             this.left = 0
             this.right = 0
-            //     if(world.shape.doesPerimeterTouch(this.body)){
-            //        this.dry =1
-            //    }
             for (let t = 0; t < world.grid.length; t++) {
                 for (let k = 0; k < world.grid[t].length; k++) {
-                    if (world.grid[t][k].doesPerimeterTouch(this.drill)) {
-                        world.grid[t][k].r -= .5
-                        world.grid[t][k].g -= .5
-                        world.grid[t][k].b -= .5
-                        if (world.grid[t][k].r < 0) {
-                            diggums.red += Math.round(world.grid[t][k].r)
-                            world.grid[t][k].r = 0
-                        }else{
 
-                            diggums.red += 1
-                        }
-                        if (world.grid[t][k].g < 0) {
-                            diggums.green += Math.round(world.grid[t][k].g)
-                            world.grid[t][k].g = 0
-                        }else{
-
-                            diggums.blue += 1
-                        }
-                        if (world.grid[t][k].b < 0) {
-                            diggums.blue += Math.round(world.grid[t][k].b)
-                            world.grid[t][k].b = 0
-                        }else{
-
-                            diggums.green += 1
-                        }
-                        if (world.grid[t][k].g + world.grid[t][k].b + world.grid[t][k].r <= 0) {
-                            world.grid[t][k].marked = 1
+                    if (diggums.fuel > 0) {
+                        if (world.grid[t][k].doesPerimeterTouch(this.drill)) {
+                            if (world.grid[t][k].r > 0) {
+                                world.grid[t][k].r -= diggums.redrate
+                                diggums.red += diggums.redrate
+                            }
+                            if (world.grid[t][k].g > 0) {
+                                world.grid[t][k].g -= diggums.bluerate
+                                diggums.blue += diggums.bluerate
+                            }
+                            if (world.grid[t][k].b > 0) {
+                                world.grid[t][k].b -= diggums.greenrate
+                                diggums.green += diggums.greenrate
+                            }
+                            if (world.grid[t][k].g + world.grid[t][k].b + world.grid[t][k].r <= 0) {
+                                world.grid[t][k].marked = 1
+                            }
                         }
                     }
                     if (world.grid[t][k].doesFootTouch(this.body)) {
@@ -1058,14 +1055,15 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
             }
-            if(this.head == 1){
+
+            if (this.head == 1) {
                 if (this.body.ymom < 0) {
                     this.body.ymom = 0
                 }
             }
             if (this.dry == 0) {
                 if (this.body.ymom > - 5) {
-                    this.body.ymom += .1
+                    this.body.ymom += .3
                 }
             } else {
                 if (this.body.ymom > 0) {
@@ -1073,16 +1071,25 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 }
             }
             this.body.frictiveMove()
+
+            this.fuelgauge = new Rectangle(this.body.x - 330, this.body.y - 270, 100, 20, "red")
+            this.fuelgauge.width = (this.fuel / this.maxfuel) * 100
+            this.fuel -= .03
+            this.fuelgauge.r = 255
+            this.fuelgauge.g = 0
+            this.fuelgauge.b = 0
+            this.fuelgauge.draw()
+
             this.drill = new Circle(this.body.x + (Math.cos(this.angle) * 17), this.body.y + (Math.sin(this.angle) * 17), 3, "yellow")
             this.drill.draw()
             this.body.draw()
             canvas_context.font = "20px arial"
             canvas_context.fillStyle = "red"
-            canvas_context.fillText(`Carbon: ${this.red}`, this.body.x - 330, this.body.y - 330)
+            canvas_context.fillText(`Carbon: ${Math.round(this.red)}`, this.body.x - 330, this.body.y - 330)
             canvas_context.fillStyle = "green"
-            canvas_context.fillText(`Nitrogen: ${this.blue}`, this.body.x - 330, this.body.y - 310)
+            canvas_context.fillText(`Nitrogen: ${Math.round(this.blue)}`, this.body.x - 330, this.body.y - 310)
             canvas_context.fillStyle = "blue"
-            canvas_context.fillText(`Hydrogen: ${this.green}`, this.body.x - 330, this.body.y - 290)
+            canvas_context.fillText(`Hydrogen: ${Math.round(this.green)}`, this.body.x - 330, this.body.y - 290)
         }
     }
 
@@ -1095,9 +1102,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 this.grid.push([])
                 for (let k = 400; k < 3000; k += 50) {
                     let block = new Rectangle((t * 50) - 1000, k, 50, 50, getRandomColor())
-                    block.r += (Math.random()*(k/50))
-                    block.g += (Math.random()*(k/50))
-                    block.b += (Math.random()*(k/50))
+                    block.r += (Math.random() * (k / 50))
+                    block.g += (Math.random() * (k / 50))
+                    block.b += (Math.random() * (k / 50))
                     this.grid[t].push(block)
                 }
             }
@@ -1134,14 +1141,23 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     let world = new Grid()
     let diggums = new Digger()
+    let fueldepot = new Rectangle(250,250, 100,100,"white")
 
     function main() {
         canvas_context.clearRect(-10000, -10000, canvas.width * 1000, canvas.height * 1000)  // refreshes the image
         gamepadAPI.update() //checks for button presses/stick movement on the connected controller)
         world.draw()
         world.clean()
+        fueldepot.draw()
+        canvas_context.fillStyle = "white"
+        canvas_context.fillText("fuel", 280,280)
+        if(fueldepot.doesPerimeterTouch(diggums.body)){
+            diggums.fuel = diggums.maxfuel
+        }
         diggums.draw()
-        control(diggums,2)
+        if (diggums.fuel > 0) {
+            control(diggums, 2.5)
+        }
     }
 
 
