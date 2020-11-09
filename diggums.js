@@ -258,7 +258,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
             if (point.x + point.radius >= this.x) {
                 if (point.y + point.radius >= this.y) {
                     if (point.x - point.radius <= this.x + this.width) {
-                        if (point.y + point.radius <= this.y + this.height) {
+                        // if (point.y + point.radius <= this.y + this.height) {
+                        if (point.y  <= this.y + this.height) {
                             return true
                         }
                     }
@@ -267,10 +268,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
             return false
         }
         doesHeadTouch(point) {
-            if (point.x + point.radius >= this.x) {
+            // if (point.x + point.radius >= this.x) {
+                if (point.x >= this.x) {
                 if (point.y >= this.y) {
                     if (point.x - point.radius <= this.x + this.width) {
-                        if (point.y - point.radius <= this.y + this.height) {
+                        // if (point.y - point.radius <= this.y + this.height) {
+                            if (point.y - point.radius <= this.y + this.height) {
                             return true
                         }
                     }
@@ -909,14 +912,18 @@ window.addEventListener('DOMContentLoaded', (event) => {
     function control(object, speed = 1) { // basic control for objects
         if (typeof object.body != 'undefined') {
             if (keysPressed['w']) {
-                if (object.dry == 1) {
-                    object.body.ymom = -(speed * 3)
-                    // canvas_context.translate(0, speed*100)
-                } else {
-                    object.body.y -= (speed)
-                    object.body.ymom -= .05
-                    canvas_context.translate(0, speed)
-                }
+                // if (object.dry == 1) {
+                //     object.body.ymom = -(speed * 3)
+                //     // canvas_context.translate(0, speed*100)
+                // } else {
+                    if(object.head ==0){
+                        object.body.y -= (speed)
+                        object.body.ymom -= .3
+                        canvas_context.translate(0, speed)
+                    }else{
+                        object.dry = 2
+                    }
+                // }
             }
             if (keysPressed['d']) {
                 if (object.right == 0) {
@@ -1012,15 +1019,23 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fuelgauge.g = 0
             this.fuelgauge.b = 0
             this.redrate = 2
-            this.bluerate = 1
-            this.greenrate = .5
+            this.bluerate = .5
+            this.greenrate = 1
             this.money = 0
+            this.greencount = 0
+            this.redcount = 0
+            this.bluecount = 0
+
 
             this.dry = 0
         }
         draw() {
 
-            this.dry = 0
+            if(this.dry == 2){
+                this.dry = 1
+            }else{
+                this.dry = 0
+            }
             this.head = 0
             this.left = 0
             this.right = 0
@@ -1032,14 +1047,17 @@ window.addEventListener('DOMContentLoaded', (event) => {
                             if (world.grid[t][k].r > 0) {
                                 world.grid[t][k].r -= diggums.redrate
                                 diggums.red += diggums.redrate
-                            }
-                            if (world.grid[t][k].g > 0) {
-                                world.grid[t][k].g -= diggums.bluerate
-                                diggums.blue += diggums.bluerate
+                                diggums.redcount += diggums.redrate
                             }
                             if (world.grid[t][k].b > 0) {
-                                world.grid[t][k].b -= diggums.greenrate
+                                world.grid[t][k].b -= diggums.bluerate
+                                diggums.blue += diggums.bluerate
+                                diggums.bluecount += diggums.bluerate
+                            }
+                            if (world.grid[t][k].g > 0) {
+                                world.grid[t][k].g -= diggums.greenrate
                                 diggums.green += diggums.greenrate
+                                diggums.greencount += diggums.greenrate
                             }
                             if (world.grid[t][k].g + world.grid[t][k].b + world.grid[t][k].r <= 0) {
                                 world.grid[t][k].marked = 1
@@ -1059,6 +1077,36 @@ window.addEventListener('DOMContentLoaded', (event) => {
                         this.right = 1
                     }
                 }
+            }
+            if(this.bluecount > 1){
+                let rect = new Rectangle(this.drill.x-((Math.random()-.5)*3), this.drill.y-((Math.random()-.5)*3), 3.5,3.5,"transparent")
+                rect.r = 0
+                rect.g = 0
+                rect.b = 255
+                rect.xmom= (Math.random()-.5)*3
+                rect.ymom= (Math.random()-.5)*3
+                particles.push(rect)
+                this.bluecount = 0
+            }
+            if(this.redcount > 1){
+                let rect = new Rectangle(this.drill.x-((Math.random()-.5)*3), this.drill.y-((Math.random()-.5)*3), 3.5,3.5,"transparent")
+                rect.r = 255
+                rect.g = 0
+                rect.b = 0
+                rect.xmom= (Math.random()-.5)*3
+                rect.ymom= (Math.random()-.5)*3
+                particles.push(rect)
+                this.redcount = 0
+            }
+            if(this.greencount > 1){
+                let rect = new Rectangle(this.drill.x-((Math.random()-.5)*3), this.drill.y-((Math.random()-.5)*3), 3.5,3.5,"transparent")
+                rect.r = 0
+                rect.g = 255
+                rect.b = 
+                rect.xmom= Math.random()-.5
+                rect.ymom= Math.random()-.5
+                particles.push(rect)
+                this.greencount = 0
             }
 
             if (this.head == 1) {
@@ -1087,10 +1135,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.fuelgauge.g = 0
             this.fuelgauge.b = 0
             this.fuelgauge.draw()
+            canvas_context.strokeStyle = "gray"
+            canvas_context.strokeRect(this.fuelgauge.x-1, this.fuelgauge.y-1, 102, this.fuelgauge.height+2)
 
-            this.drill = new Circle(this.body.x + (Math.cos(this.angle) * 17), this.body.y + (Math.sin(this.angle) * 17), 3, "yellow")
+            this.drill = new Circle(this.body.x + (Math.cos(((Math.random()*-.5)*.35)+this.angle) * 17), this.body.y + (Math.sin(((Math.random()*-.5)*.35)+this.angle) * 17), 3, "yellow")
+            this.drill2 = new Circle(this.body.x + (Math.cos(((Math.random()*-.5)*.35)+this.angle+(Math.PI*.5)) * 15), this.body.y + (Math.sin(((Math.random()*-.5)*.35)+this.angle+(Math.PI*.5)) * 15), 3, "yellow")
+            this.drill3 = new Circle(this.body.x + (Math.cos(((Math.random()*-.5)*.35)+this.angle-(Math.PI*.5)) * 15), this.body.y + (Math.sin(((Math.random()*-.5)*.35)+this.angle-(Math.PI*.5)) * 15), 3, "yellow")
             this.drill.draw()
+            this.link1 = new LineOP(this.drill, this.drill2, "yellow" , 8)
+            // this.link2 = new LineOP(this.drill2, this.drill3, "yellow" , 3)
+            this.link3 = new LineOP(this.drill, this.drill3, "yellow" ,8)
             this.body.draw()
+            this.link1.draw()
+            // this.link2.draw()
+            this.link3.draw()
+            // canvas_context.fill()
             canvas_context.font = "20px arial"
             canvas_context.fillStyle = "red"
             canvas_context.fillText(`Carbon: ${Math.round(this.red)}`, this.body.x - 330, this.body.y - 330)
@@ -1098,7 +1157,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             canvas_context.fillText(`Nitrogen: ${Math.round(this.blue)}`, this.body.x - 330, this.body.y - 310)
             canvas_context.fillStyle = "blue"
             canvas_context.fillText(`Hydrogen: ${Math.round(this.green)}`, this.body.x - 330, this.body.y - 290)
-            canvas_context.fillText(`$ ${Math.round(this.money)}`, this.body.x + 280, this.body.y - 330)
+            canvas_context.fillText(`$ ${Math.round(this.money)}`, this.body.x + 260, this.body.y - 330)
         }
     }
 
@@ -1159,6 +1218,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     let fueldepot = new Rectangle(250, 250, 100, 100, "white")
     let selldepot = new Rectangle(450, 250, 100, 100, "white")
     let upgradedepot = new Rectangle(650, 250, 100, 100, "white")
+    let particles = []
 
     function main() {
         canvas_context.clearRect(-10000, -10000, canvas.width * 1000, canvas.height * 1000)  // refreshes the image
@@ -1205,7 +1265,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
         diggums.draw()
         if (diggums.fuel > 0) {
-            control(diggums, 2.5)
+            control(diggums, 5)
+        }
+        for(let t = 0;t<particles.length;t++){
+            particles[t].move()
+            particles[t].draw()
+            particles[t].height-=.1
+            particles[t].width-=.1
+        }
+        for(let t = 0;t<particles.length;t++){
+            if(particles[t].height <= 0){
+                particles.splice(t,1)
+            }else if(particles[t].width <= 0){
+                particles.splice(t,1)
+            }
+
         }
     }
 
